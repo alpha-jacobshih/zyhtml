@@ -1,0 +1,706 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang='en'>
+<head>
+<title>Lea</title>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<link rel='stylesheet' type='text/css' href='style.css'>
+</head>
+
+<body>
+<div id='containerBanner' class='containerBanner'></div>
+<div id='containerStatus' class='containerStatus'></div>
+<div id='containerMain' class='containerMain'>
+</div>
+<!--
++= containerBanner ==========================================================+
+| Lea                                                     @Logout | Language |
++= containerStatus ==========================================================|
+|                                                               @   @   @    |
++= containerMain ============================================================+
+|+= containerHomeMenu ======================================================+|
+||                                                                          ||
+||                    Configure   Control     Monitor                       ||
+||                      Device      Map        Info                         ||
+||                       PLC      Schedule     Usage                        ||
+||                       WiFi      Manage      Tools                        ||
+||                                                                          ||
+||                                                                          ||
+|+==========================================================================+|
++============================================================================+
+
++= containerBanner ==========================================================+
+| Lea                                                     @Logout | Language |
++= containerStatus ==========================================================|
+|                                                               @   @   @    |
++= containerMain ============================================================+
+|+= containerMenu ===++= containerPage =====================================+|
+|| += tableMenu ===+ || += tablePage =====================================+ ||
+|| | Configure     | || |                                                 | ||
+|| | > Device      | || |                                                 | ||
+|| | > PLC         | || |                                                 | ||
+|| | > WiFi        | || |                                                 | ||
+|| |               | || |                                                 | ||
+|| | Control       | || |                                                 | ||
+|| | > Map         | || |                                                 | ||
+|| | > Schedule    | || |                                                 | ||
+|| | > Manage      | || |                                                 | ||
+|| |               | || |                                                 | ||
+|| | Monitor       | || |                                                 | ||
+|| | > Info        | || |                                                 | ||
+|| | > Usage       | || |                                                 | ||
+|| | > Tools       | || |                                                 | ||
+|| +===============+ || +=================================================+ ||
+|+==========================================================================+|
++============================================================================+
+ -->
+</body>
+<script language='JavaScript' type='text/javascript'>
+function $(n) {
+    return document.getElementById(n);
+}
+
+$.createElement = function(parent, tag, args) {
+    var elm = document.createElement(tag);
+    for(var i in args) {
+        elm.setAttribute(i, args[i]);
+    }
+    if(parent != null) {
+        parent.appendChild(elm);
+    }
+    return elm;
+}
+
+$.createTextNode = function(parent, data) {
+    var text = document.createTextNode(data);
+    if(parent != null) {
+        parent.appendChild(text);
+    }
+    return text;
+}
+
+$.getAncestorByTagName = function(node, name) {
+    var currNode = node;
+    var ancestorNode = null;
+    do {
+        var tagName = currNode.tagName.toUpperCase();
+        if(currNode.tagName.toUpperCase() === name) {
+            ancestorNode = currNode;
+            break;
+        }
+        currNode = currNode.parentNode;
+    } while(tagName != "HTML");
+    return ancestorNode;
+}
+
+if (!Object.create) {
+    Object.create = function(o, properties) {
+        if (typeof o !== 'object' && typeof o !== 'function') {
+            throw new TypeError('Object prototype may only be an Object: ' + o);
+        } else if (o === null) {
+            throw new Error("This browser's implementation of Object.create is a shim and doesn't support 'null' as the first argument.");
+        }
+        if (typeof properties != 'undefined') {
+            throw new Error("This browser's implementation of Object.create is a shim and doesn't support a second argument.");
+        }
+        function F() {}
+        F.prototype = o;
+        return new F();
+    };
+}
+
+function URL(url) {
+    this.url = url;
+    this.queries = {};
+}
+URL.prototype.addQuery = function (name, value) {
+    this.queries[name] = value;
+}
+URL.prototype.toString = function() {
+    var url = this.url;
+    var qstring = "";
+    if(Object.keys(this.queries).length > 0) {
+        for(var i in this.queries) {
+            qstring += qstring.length === 0 ? "?" : "&";
+            qstring += i + "=" + this.queries[i];
+        }
+    }
+    return url + qstring;
+}
+
+function Menu(title) {
+    this.title = title;
+    this.pages = [];
+    this.addPage = function(page) { this.pages.push(page); };
+}
+
+function Page(title, description) {
+    this.parent = null;
+    this.profile = null;
+    this.title = title;
+    this.description = description;
+    this.forms = {};
+    this.setParent = function(parent) { this.parent = parent; };
+    this.setPrivilege = function(privilege) { this.privilege = (privilege === null) ? P.User : privilege; };
+}
+
+function Form(title, action) {
+    this.title = title;
+    this.action = action;
+    this.items = {};
+}
+
+function PageItem(privilege, type, title, value, args) {
+    this.parent = null;
+    this.privilege = privilege;
+    this.type = type;
+    this.title = title;
+    this.value = value;
+    this.args = args;
+    this.setParent = function(parent) { this.parent = parent; };
+    this.setId = function(id) { this.id = id; };
+    this.getId = function() { return this.id; };
+}
+
+function BODY() {
+    this.contr = document.body;
+    this.children = [];
+    this.profile = null;
+    this.privilege = null;
+    this.language = "English";
+}
+BODY.prototype.addChild = function(child) {
+    this.children.push(child);
+}
+BODY.prototype.draw = function() {
+    for(var i in this.children) {
+        this.children[i].draw();
+    }
+}
+BODY.prototype.setPrivilege = function(privilege) {
+    this.privilege = privilege;
+}
+BODY.prototype.setProfile = function(profile) {
+    this.profile = profile;
+    if(profile === "User") {
+        this.setPrivilege(P.User);
+    } else if(profile === "Expert") {
+        this.setPrivilege(P.Expert);
+    } else if(profile === "Admin") {
+        this.setPrivilege(P.Admin);
+    }
+}
+BODY.prototype.setLanguage = function(language) {
+    console.log("selected language: "+language);
+    this.language = language;
+}
+
+function CONTAINER(parent, name) {
+    this.parent = parent;
+    this.contr = $(name);
+    this.parent.addChild(this);
+}
+CONTAINER.prototype.removeAllNodes = function() {
+    var contr = this.contr;
+    while (contr.firstChild) {
+        contr.removeChild(contr.firstChild);
+    }
+}
+
+function BANNER(parent, name) {
+    CONTAINER.call(this, parent, name);
+}
+BANNER.prototype = Object.create(CONTAINER.prototype);
+BANNER.prototype.draw = function() {
+    this.removeAllNodes();
+    var img = text = href = null;
+    var contr = this.contr;
+    var divBannerLogo = $.createElement(contr, "div", {"class": "divBannerLogo"});
+    href = $.createElement(divBannerLogo, "a", {"href": "javascript:void(0);", "onclick": "goHome();"});
+    img = $.createElement(href, "img", {"src": "img/banner_lea_logo.png", "border": "0"});
+    var divBannerBody = $.createElement(contr, "div", {"class": "divBannerBody"});
+    var divBannerContent = $.createElement(divBannerBody, "div", {"class": "divBannerContent"});
+    var profile = this.parent.profile;
+    if(profile !== null && profile !== "Admin") {
+        var contr = divBannerContent;
+        var select = $.createElement(contr, "select", {"class": "", "id": "profile"});
+        var options = ["User", "Expert"];
+        for(var i in options) {
+            var option = $.createElement(select, "option", {"class": ""});
+            option.text = options[i];
+            option.value = options[i];
+            option.selected = (profile === options[i]);
+            select.appendChild(option);
+        }
+        select.addEventListener("change", function(){
+            var select = $("profile");
+            var text = select.options[select.selectedIndex].value;
+            this.parent.setProfile(text);
+            this.parent.draw();
+        }.bind(this));
+    }
+    text = $.createTextNode(href, " ");
+    img = $.createElement(divBannerContent, "img", {"src": "img/icon_power.png", "align": "top"});
+    href = $.createElement(divBannerContent, "a", {"href": "javascript:void(0);", "onclick": "logout();"});
+    text = $.createTextNode(href, " Logout ");
+    img = $.createElement(divBannerContent, "img", {"src": "img/divide_banner.png", "align": "top"});
+    text = $.createTextNode(divBannerContent, " Language ");
+    var select = $.createElement(divBannerContent, "select", {"class": "selectLanguage", "id": "language"});
+    var options = ["English", "Español", "Deutsch", "Français", "Italiano"];
+    for(var i in options) {
+        var option = $.createElement(select, "option", {"class": ""});
+        option.text = options[i];
+        option.value = options[i];
+        option.selected = (this.parent.language === options[i]);
+        select.appendChild(option);
+    }
+    select.addEventListener("change", function(){
+        var select = $("language");
+        var text = select.options[select.selectedIndex].value;
+        this.parent.setLanguage(text);
+        this.parent.draw();
+    }.bind(this));
+}
+
+function STATUSBAR(parent, name) {
+    CONTAINER.call(this, parent, name);
+}
+STATUSBAR.prototype = Object.create(CONTAINER.prototype);
+STATUSBAR.prototype.draw = function() {
+    this.removeAllNodes();
+    var img = text = null;
+    var divStatus = $.createElement(this.contr, "div", {"class": "divStatus"});
+    var contr = divStatus;
+    
+    img = $.createElement(contr, "img", {"src": "img/icon_protect.png"});
+    img = $.createElement(contr, "img", {"src": "img/icon_ok.png"});
+    text = $.createTextNode(contr, " ");
+    img = $.createElement(contr, "img", {"src": "img/icon_@.png"});
+    img = $.createElement(contr, "img", {"src": "img/icon_ok.png"});
+    text = $.createTextNode(contr, " ");
+    img = $.createElement(contr, "img", {"src": "img/icon_wifi.png"});
+    img = $.createElement(contr, "img", {"src": "img/icon_ok.png"});
+    text = $.createTextNode(contr, " ");
+
+}
+
+function MAIN(parent, name) {
+    CONTAINER.call(this, parent, name);
+    this.pageTitle = "";
+}
+MAIN.prototype = Object.create(CONTAINER.prototype);
+
+MAIN.prototype.setPageTitle = function(pageTitle) {
+    this.pageTitle = pageTitle;
+}
+
+MAIN.prototype.draw = function() {
+    this.removeAllNodes();
+
+    if(this.pageTitle === null || this.pageTitle.length === 0) {
+        if(this.parent.profile === null) {
+            this.drawLoginPage();
+        } else {
+            this.drawHomeMenu();
+        }
+    } else {
+        this.drawBody();
+    }
+}
+
+MAIN.prototype.drawLoginPage = function() {
+    var items = {
+        "username": new PageItem(P.User, "select", "Username", "User", {"options": ["User", "Admin"]}),
+        "password": new PageItem(P.User, "text", "Password", "")
+        };
+
+    var containerLogin = $.createElement(this.contr, "div", {"class": "containerLogin"});
+    var divTopMargin = $.createElement(containerLogin, "div", {"class": "divHomeMenuTopMargin"});
+    var tablePage = $.createElement(containerLogin, "table", {"class": "tablePage"});
+    for(var i in items) {
+        var item = items[i];
+        item.setId(i);
+        item.setParent(tablePage);
+        item.draw();
+    }
+
+    var hrDivider = $.createElement(containerLogin, "hr", {"class": "gradient-transparent"});
+    var tableAction = $.createElement(containerLogin, "table", {"align": "right"});
+    row = tableAction.insertRow(tableAction.rows.length);
+    cell = row.insertCell(row.cells.length);
+    cell.className = "tdAction";
+    divElm = $.createElement(cell, "div", {"class": "divAction"});
+    var btnLogin = $.createElement(divElm, "input", {"type": "button", "class": "btnAction", "id": "btnLogin", "value": "Login"});
+    btnLogin.addEventListener("click", function() {
+        var select = $("username");
+        var option = select.options[select.selectedIndex].value;
+        this.parent.setProfile(option);
+        goHome();
+        return false;
+    }.bind(this));
+    btnLogin.focus(true);
+}
+
+MAIN.prototype.drawHomeMenu = function() {
+    var containerHomeMenu = $.createElement(this.contr, "div", {"class": "containerHomeMenu"});
+    var divHomeMenuTopMargin = $.createElement(containerHomeMenu, "div", {"class": "divHomeMenuTopMargin"});
+    var tableHomeMenu = $.createElement(containerHomeMenu, "table", {"class": "tableHomeMenu"});
+    var numOfRows = 0;
+    var row = tableHomeMenu.insertRow(tableHomeMenu.rows.length);
+    for(var i in menu) {
+        var pages = Object.keys(menu[i].pages);
+        var cell = row.insertCell(row.cells.length);
+        var divHomeMenuMainItem = $.createElement(cell, "div", {"class": "divHomeMenuMainItem"});
+        cell.className = "tdHomeMenuHeader";
+        $.createTextNode(divHomeMenuMainItem, menu[i].title);
+        numOfRows = Math.max(numOfRows, pages.length);
+    }
+    for(var r = 0; r < numOfRows; r++) {
+        var row = tableHomeMenu.insertRow(tableHomeMenu.rows.length);
+        for(var i in menu) {
+            var cell = row.insertCell(row.cells.length);
+            var divHomeMenuSubItem = $.createElement(cell, "div", {"class": "divHomeMenuSubItem"});
+            var pages = Object.keys(menu[i].pages);
+            for(var j = 0; j < pages.length; j++) {
+                if(r === j) {
+                    var key = pages[j];
+                    if(menu[i].pages[key] != null) {
+                        var href = $.createElement(divHomeMenuSubItem, "a", {"href": "javascript:void(0)"});
+                        href.addEventListener("click", function (e) { this.gotoPage(e); }.bind(this), false);
+                        $.createTextNode(href, menu[i].pages[key].title);
+                    }
+                    break;
+                }
+            }
+            if(divHomeMenuSubItem.childNodes.length === 0) {
+                $.createTextNode(divHomeMenuSubItem, " ");
+            }
+        }
+    }
+}
+
+MAIN.prototype.drawBody = function() {
+    this.drawMenu();
+    this.drawPage();
+}
+
+MAIN.prototype.drawMenu = function() {
+    var containerMenu = $.createElement(this.contr, "div", {"class": "containerMenu"});
+    var tableMenu = $.createElement(containerMenu, "table", {"class": "tableMenu"});
+    for(var i in menu) {
+        var row = tableMenu.insertRow(tableMenu.rows.length);
+        var cell = row.insertCell(row.cells.length);
+        var divMenuMainItem = $.createElement(cell, "div", {"class": "divMenuMainItem"});
+        cell.className = "tdMenuHeader";
+        $.createTextNode(divMenuMainItem, menu[i].title);
+        var rowDivider = tableMenu.insertRow(tableMenu.rows.length);
+        var cellDivider = rowDivider.insertCell(rowDivider.cells.length);
+        var divMenuMainItem = $.createElement(cellDivider, "div", {"class": "divMenuDivider"});
+        for(var j in menu[i].pages) {
+            var isCurrentPage = (menu[i].pages[j].title === this.pageTitle);
+            var row = tableMenu.insertRow(tableMenu.rows.length);
+            var cell = row.insertCell(row.cells.length);
+            var divMenuSubItem = $.createElement(cell, "div", {"class": "divMenuSubItem"});
+            if(isCurrentPage) {
+                var img = $.createElement(divMenuSubItem, "img", {"src": "img/arrow_yellow.png"});
+                $.createTextNode(divMenuSubItem, " ");
+                $.createTextNode(divMenuSubItem, menu[i].pages[j].title);
+            } else {
+                var img = $.createElement(divMenuSubItem, "img", {"src": "img/arrow_gray.png"});
+                $.createTextNode(divMenuSubItem, " ");
+                var href = $.createElement(divMenuSubItem, "a", {"href": "javascript:void(0)"});
+                href.addEventListener("click", function (e) { this.gotoPage(e); }.bind(this), false);
+                $.createTextNode(href, menu[i].pages[j].title);
+            }
+        }
+    }
+}
+
+MAIN.prototype.drawPage = function() {
+    var page = this.getPage(this.pageTitle);
+    if(page != null) {
+        var containerPage = $.createElement(this.contr, "div", {"class": "containerPage"});
+        var divPage = $.createElement(containerPage, "div", {"class": "divPage"});
+        page.init();
+        page.setParent(divPage);
+        page.setPrivilege(this.parent.privilege);
+        page.draw();
+    }
+}
+
+MAIN.prototype.getPage = function(title) {
+    for(var i in menu) {
+        for(var j in menu[i].pages) {
+            if(menu[i].pages[j].title === this.pageTitle) {
+                return menu[i].pages[j];
+            }
+        }
+    }
+    return null;
+}
+
+MAIN.prototype.gotoPage = function (e) {
+    var t = e.target;
+    if(t instanceof HTMLElement && t.childNodes != null && t.childNodes.length > 0) {
+        var title = t.childNodes[0].nodeValue;
+        if(domReflow) {
+            this.setPageTitle(title);
+            this.draw();
+        } else {
+            var url = new URL(location.pathname);
+            var profile = this.parent.profile;
+            if(profile != null && profile != "") {
+                url.addQuery("profile", profile);
+            }
+            url.addQuery("page", title);
+            location.href = url.toString();
+        }
+    }
+}
+
+Page.prototype.init = function() {
+    for(var f in this.forms) {
+        for(var i in this.forms[f].items) {
+            this.forms[f].items[i].setId(i);
+        }
+    }
+};
+
+Page.prototype.apply = function(action) {
+};
+
+Page.prototype.draw = function() {
+    var container = this.parent;
+    if(container != null) {
+        for(var f in this.forms) {
+            var form = this.forms[f];
+            var formElement = null;
+            if(form.action.length > 0) {
+                container = formElement = $.createElement(container, "form", {"action": form.action});
+            }
+            var items = form.items;
+            var row = cell = divElm = divValue = null;
+            var tablePageTitle = $.createElement(container, "table", {"class": "tablePageTitle"});
+            row = tablePageTitle.insertRow(tablePageTitle.rows.length);
+            cell = row.insertCell(row.cells.length);
+            cell.className = "tdPageTitle";
+            divElm = $.createElement(cell, "div", {"class": "divPageTitle"});
+            $.createTextNode(divElm, form.title);
+
+            var tablePage = $.createElement(container, "table", {"class": "tablePage"});
+            for(var i in items) {
+                var item = items[i];
+                if(this.privilege < item.privilege) {
+                    continue;
+                }
+                item.setParent(tablePage);
+                item.draw();
+            }
+
+            if(formElement != null) {
+                // create action buttons (apply/cancel)
+                var hrDivider = $.createElement(container, "hr", {"class": "gradient-transparent"});
+                var tableAction = $.createElement(container, "table", {"class": "tableAction"});
+                row = tableAction.insertRow(tableAction.rows.length);
+                cell = row.insertCell(row.cells.length);
+                cell.className = "tdAction";
+                divElm = $.createElement(cell, "div", {"class": "divAction"});
+                var btnApply = $.createElement(divElm, "input", {"type": "button", "class": "btnAction", "id": "btnApply", "value": "Apply"});
+                var textSeparator = $.createTextNode(divElm, " ");
+                var btnCancel = $.createElement(divElm, "input", {"type": "button", "class": "btnAction", "id": "btnCancel", "value": "Cancel"});
+                btnApply.addEventListener("click", function(e) {
+                    var form = $.getAncestorByTagName(e.target, "FORM");
+                    var action = form !== null ? form.action : null;
+                    this.apply(action);
+                }.bind(this));
+            }
+            // FIXME: implement the multiple forms in one page.
+            break;
+        }
+    }
+};
+
+PageItem.prototype.draw = function() {
+    var tablePage = this.parent;
+    if(tablePage != null && tablePage.tagName.toUpperCase() === "TABLE") {
+        row = tablePage.insertRow(tablePage.rows.length);
+        cell = row.insertCell(row.cells.length);
+        cell.className = "tdName";
+        if(this.type === "section") {
+            cell.colSpan = "2";
+            divElm = $.createElement(cell, "div", {"class": "divSection"});
+            $.createTextNode(divElm, this.title);
+            return;
+        }
+        divElm = $.createElement(cell, "div", {"class": "divName"});
+        $.createTextNode(divElm, this.title);
+
+        cell = row.insertCell(row.cells.length);
+        cell.className = "tdValue";
+        divElm = $.createElement(cell, "div", {"class": "divValue"});
+        if(this.type === "text") {
+            var value = this.value ? this.value : "";
+            var text = $.createElement(divElm, "input", {"type": "text", "class": "", "id": this.id, "value": value});
+        } else if(this.type === "select") {
+            if(this.args && this.args.options) {
+                var select = $.createElement(divElm, "select", {"class": "", "id": this.id});
+                var options = this.args.options;
+                for(var i in options) {
+                    var option = $.createElement(divElm, "option", {"class": ""});
+                    option.text = options[i];
+                    option.value = options[i];
+                    option.selected = (this.value === options[i]);
+                    select.appendChild(option);
+                }
+            }
+        } else if(this.type === "checkbox") {
+            var value = this.value ? this.value : false;
+//          var checkbox = $.createElement(divElm, "input", {"type": "checkbox", "class": "", "id": this.id});
+            var divSwitch = $.createElement(divElm, "div", {"class": "onoffswitch"});
+            var checkbox = $.createElement(divSwitch, "input", {"type": "checkbox", "class": "onoffswitch-checkbox", "id": this.id});
+            var label = $.createElement(divSwitch, "label", {"for": this.id, "class": "onoffswitch-label", "id": this.id});
+            var spanInner = $.createElement(label, "span", {"class": "onoffswitch-inner"});
+            var spanSwitch = $.createElement(label, "span", {"class": "onoffswitch-switch"});
+            checkbox.checked = value;
+        } else if(this.type === "plaintext") {
+            var value = this.value ? this.value : "";
+            var plaintext = $.createTextNode(divElm, value);
+        }
+    }
+};
+
+function init() {
+    if(!domReflow) {
+        var vars = location.search.substring(1).split("&");
+        for(i in vars) {
+            var pair = vars[i].split("=");
+            var name = pair[0];
+            var value = pair.length > 1 ? pair[1] : "";
+            if(name === "page") {
+                main.setPageTitle(value);
+            }
+            if(name === "profile") {
+                body.setProfile(value);
+            }
+        }
+    }
+    body.draw();
+}
+
+function logout(){
+    body.setProfile(null);
+    goHome();
+}
+
+function goHome() {
+    if(domReflow) {
+        main.setPageTitle(null);
+        body.draw();
+    } else {
+        var url = new URL(location.pathname);
+        if(body.profile != null && body.profile != "") {
+            url.addQuery("profile", body.profile);
+        }
+        location.href = url.toString();
+    }
+}
+
+var domReflow = true;
+var P = {
+    User:   0x01,
+    Expert: 0x02,
+    Admin:  0x04
+};
+var body = new BODY();
+var banner = new BANNER(body, "containerBanner");
+var statusbar = new STATUSBAR(body, "containerStatus");
+var main = new MAIN(body, "containerMain");
+var menu = {
+    "configure": new Menu("Configure"),
+    "control": new Menu("Control"),
+    "monitor": new Menu("Monitor")
+};
+
+menu.configure.pages = {
+    "device": new Page("Device"),
+    "plc": new Page("PLC"),
+    "wifi": new Page("WiFi")
+};
+menu.control.pages = {
+    "map": new Page("Map"),
+    "schedule": new Page("Schedule"),
+    "manage": new Page("Manage")
+};
+menu.monitor.pages = {
+    "info": new Page("Info"),
+    "usage": new Page("Usage"),
+    "tools": new Page("Tools")
+};
+
+menu.configure.pages.device.forms = {
+    "deviceAction": new Form("Device", "deviceAction"),
+    "resetAction": new Form("Reset", "resetAction")
+};
+menu.configure.pages.device.forms.deviceAction.items = {
+    "deviceName": new PageItem(P.User, "text", "Device name", "NS-1812"),
+    "ledSignal": new PageItem(P.User, "select", "LED signal", "Enable", {"options": ["Enable", "Disable"]}),
+    "dns": new PageItem(P.Expert, "text", "DNS"),
+    "dnsProxy": new PageItem(P.Expert, "checkbox", "Enable DNS proxy"),
+    "wanAddress": new PageItem(P.Expert, "text", "DHCP based WAN address"),
+    "dhcpRelay": new PageItem(P.Expert, "checkbox", "Enable DHCP relay"),
+    "lanDHCP": new PageItem(P.Expert, "checkbox", "Enable LAN DHCP"),
+    "reserveIpAddress": new PageItem(P.Expert, "text", "Reserve IP address per MAC"),
+    "ntpServerOptions": new PageItem(P.Expert, "text", "NTP server options"),
+    "firewall": new PageItem(P.Expert, "select", "Firewall", "Enable", {"options": ["Enable", "Disable"]}),
+    "firewallProfile": new PageItem(P.Expert, "select", "Firewall profile", "Medium", {"options": ["Low", "Medium", "High"]}),
+    "emailNotification": new PageItem(P.Expert, "text", "E-mail notification")
+};
+
+menu.configure.pages.device.apply = function(action) {
+}
+
+menu.configure.pages.device.forms.resetAction.items = {
+    "deviceName": new PageItem(P.User, "text", "Device name", "NS-1812"),
+    "ledSignal": new PageItem(P.User, "select", "LED signal", "Enable", {"options": ["Enable", "Disable"]})
+};
+
+menu.configure.pages.plc.forms = {
+    "plcAction": new Form("PLC", "plcAction")
+};
+menu.configure.pages.plc.forms.plcAction.items = {
+    "securityKey": new PageItem(P.User, "text", "Change security key", "HomePlugAV"),
+    "maxNumOfNode": new PageItem(P.Expert, "text", "Max number of node", "3")
+};
+
+menu.configure.pages.wifi.forms = {
+    "wifiAction": new Form("WiFi", "wifiAction")
+};
+menu.configure.pages.wifi.forms.wifiAction.items = {
+    "titlewifi24": new PageItem(P.User, "section", "Wireless network 2.4GHz"),
+    "wifi24_ssid": new PageItem(P.User, "text", "SSID", "NS1812_2.4G"),
+    "wifi24_visible": new PageItem(P.Expert, "checkbox", "Enable SSID visible", true),
+    "wifi24_sectype": new PageItem(P.User, "select", "Security type", "None", {"options": ["None", "WPA-PSK [TKIP]", "WPA2-PSK [AES]", "WPA-PSK [TKIP] + WPA2-PSK [AES]", "WPA/WPA2 Enterprise"]}),
+    "wifi24_channel": new PageItem(P.User, "select", "Channel", "03", {"options": ["Auto", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]}),
+    "titlewifi50": new PageItem(P.User, "section", "Wireless network 5.0GHz"),
+    "wifi50_ssid": new PageItem(P.User, "text", "SSID", "NS1812_5G"),
+    "wifi50_visible": new PageItem(P.Expert, "checkbox", "Enable SSID visible", true),
+    "wifi50_sectype": new PageItem(P.User, "select", "Security type", "None", {"options": ["None", "WPA2-PSK [AES]", "WPA-PSK [TKIP] + WPA2-PSK [AES]", "WPA/WPA2 Enterprise"]}),
+    "wifi50_channel": new PageItem(P.User, "select", "Channel", "161", {"options": ["149", "153", "157", "161"]})
+};
+
+
+menu.monitor.pages.info.forms = {
+    "infoAction": new Form("Info", "")
+};
+menu.monitor.pages.info.forms.infoAction.items = {
+    "serialNumber": new PageItem(P.User, "plaintext", "Serial number", "0123456789"),
+    "macAddress": new PageItem(P.User, "plaintext", "MAC address", "00:11:22:33:aa:bb"),
+    "firmwareVersion": new PageItem(P.User, "plaintext", "Firmware version", "v0.00.01b12"),
+    "hardwareVersion": new PageItem(P.User, "plaintext", "Hardware version", "Rev.A1"),
+    "homeplugDriverVersion": new PageItem(P.User, "plaintext", "Homeplug driver version", "v1.00.02"),
+    "ipAddress": new PageItem(P.User, "plaintext", "IP address", "2.10.86.189"),
+    "uptime": new PageItem(P.User, "plaintext", "Uptime", "1453293715")
+};
+init();
+</script>
+</html>
