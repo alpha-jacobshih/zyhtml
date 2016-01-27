@@ -10,8 +10,30 @@
 <body>
 <div id='containerBanner' class='containerBanner'></div>
 <div id='containerStatus' class='containerStatus'></div>
-<div id='containerMain' class='containerMain'>
+<div id='containerMain' class='containerMain'></div>
+
+<div id="divBlanket" style="display:none;"></div>
+<div id="divPopup" style="display:none;">
+  <div id='divLoading'>
+    <div id='divLoadingIcon'>
+      <div class="sk-circle">
+        <div class="sk-circle1  sk-child"></div>
+        <div class="sk-circle2  sk-child"></div>
+        <div class="sk-circle3  sk-child"></div>
+        <div class="sk-circle4  sk-child"></div>
+        <div class="sk-circle5  sk-child"></div>
+        <div class="sk-circle6  sk-child"></div>
+        <div class="sk-circle7  sk-child"></div>
+        <div class="sk-circle8  sk-child"></div>
+        <div class="sk-circle9  sk-child"></div>
+        <div class="sk-circle10 sk-child"></div>
+        <div class="sk-circle11 sk-child"></div>
+        <div class="sk-circle12 sk-child"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
 <!--
 += containerBanner ==========================================================+
 | Lea                                                     @Logout | Language |
@@ -93,6 +115,7 @@ $.getAncestorByTagName = function(node, name) {
     return ancestorNode;
 }
 
+// +++ fixed for ie9 and below.
 if (!Object.create) {
     Object.create = function(o, properties) {
         if (typeof o !== 'object' && typeof o !== 'function') {
@@ -108,6 +131,7 @@ if (!Object.create) {
         return new F();
     };
 }
+// --- fixed for ie9 and below.
 
 function URL(url) {
     this.url = url;
@@ -135,12 +159,14 @@ function Menu(title) {
 }
 
 function Page(title, description) {
+    this.contr = null;
     this.parent = null;
     this.profile = null;
     this.title = title;
     this.description = description;
     this.forms = {};
     this.setParent = function(parent) { this.parent = parent; };
+    this.setContainer = function(contr) { this.contr = contr; };
     this.setPrivilege = function(privilege) { this.privilege = (privilege === null) ? P.User : privilege; };
 }
 
@@ -151,15 +177,67 @@ function Form(title, action) {
 }
 
 function PageItem(privilege, type, title, value, args) {
-    this.parent = null;
+    this.contr = null;
     this.privilege = privilege;
     this.type = type;
     this.title = title;
     this.value = value;
     this.args = args;
-    this.setParent = function(parent) { this.parent = parent; };
+    this.setContainer = function(contr) { this.contr = contr; };
     this.setId = function(id) { this.id = id; };
     this.getId = function() { return this.id; };
+}
+
+function POPUP(width, height) {
+    this.width = width;
+    this.height = height;
+    this.popup = "divPopup";
+    this.blanket = "divBlanket";
+    this.init();
+}
+POPUP.prototype.viewport = function() {
+    w = (typeof window.innerWidth != 'undefined') ? window.innerWidth : document.documentElement.clientWidth;
+    h = (typeof window.innerHeight != 'undefined') ? window.innerHeight : document.documentElement.clientHeight;
+    return { 'width': w, 'height': h };
+};
+POPUP.prototype.init = function() {
+    var viewport = this.viewport();
+    if ((viewport.height > document.body.parentNode.scrollHeight) && (viewport.height > document.body.parentNode.clientHeight)) {
+        contentHeight = viewport.height;
+    } else {
+        if (document.body.parentNode.clientHeight > document.body.parentNode.scrollHeight) {
+            contentHeight = document.body.parentNode.clientHeight;
+        } else {
+            contentHeight = document.body.parentNode.scrollHeight;
+        }
+    }
+    if ((viewport.width > document.body.parentNode.scrollWidth) && (viewport.width > document.body.parentNode.clientWidth)) {
+        contentWidth = viewport.width;
+    } else {
+        if (document.body.parentNode.clientWidth > document.body.parentNode.scrollWidth) {
+            contentWidth = document.body.parentNode.clientWidth;
+        } else {
+            contentWidth = document.body.parentNode.scrollWidth;
+        }
+    }
+    var blanket = document.getElementById(this.blanket);
+    blanket.style.height = contentHeight + 'px';
+    var top = (viewport.height > this.height) ? (viewport.height - this.height) / 2 : 0;
+    var left = (contentWidth > this.width) ? (contentWidth - this.width) / 2 : 0;
+    var el = document.getElementById(this.popup);
+    el.style.width = this.width + 'px';
+    el.style.height = this.height + 'px';
+    el.style.top = top + 'px';
+    el.style.left = left + 'px';
+};
+POPUP.prototype.show = function(isShow) {
+    if(isShow) {
+        $(this.blanket).style.display = 'block';
+        $(this.popup).style.display = 'block';
+    } else {
+        $(this.blanket).style.display = 'none';
+        $(this.popup).style.display = 'none';
+    }
 }
 
 function BODY() {
@@ -168,14 +246,19 @@ function BODY() {
     this.profile = null;
     this.privilege = null;
     this.language = "English";
+    this.popup = new POPUP(40, 40);
 }
 BODY.prototype.addChild = function(child) {
     this.children.push(child);
 }
 BODY.prototype.draw = function() {
+    this.loading(true);
     for(var i in this.children) {
         this.children[i].draw();
     }
+    setTimeout(function() {
+        this.loading(false);
+    }.bind(this), 500);
 }
 BODY.prototype.setPrivilege = function(privilege) {
     this.privilege = privilege;
@@ -194,6 +277,9 @@ BODY.prototype.setLanguage = function(language) {
     console.log("selected language: "+language);
     this.language = language;
 }
+BODY.prototype.loading = function(isLoading) {
+    this.popup.show(isLoading);
+};
 
 function CONTAINER(parent, name) {
     this.parent = parent;
@@ -293,7 +379,6 @@ MAIN.prototype = Object.create(CONTAINER.prototype);
 MAIN.prototype.setPageTitle = function(pageTitle) {
     this.pageTitle = pageTitle;
 }
-
 MAIN.prototype.draw = function() {
     this.removeAllNodes();
 
@@ -320,7 +405,7 @@ MAIN.prototype.drawLoginPage = function() {
     for(var i in items) {
         var item = items[i];
         item.setId(i);
-        item.setParent(tablePage);
+        item.setContainer(tablePage);
         item.draw();
     }
 
@@ -422,7 +507,8 @@ MAIN.prototype.drawPage = function() {
         var containerPage = $.createElement(this.contr, "div", {"class": "containerPage"});
         var divPage = $.createElement(containerPage, "div", {"class": "divPage"});
         page.init();
-        page.setParent(divPage);
+        page.setParent(this);
+        page.setContainer(divPage);
         page.setPrivilege(this.parent.privilege);
         page.draw();
     }
@@ -468,9 +554,14 @@ Page.prototype.init = function() {
 
 Page.prototype.apply = function(action) {
 };
-
+Page.prototype.loading = function(isLoading) {
+    var ns_main = this.parent;
+    var ns_body = ns_main.parent;
+    ns_body.loading(isLoading);
+}
 Page.prototype.draw = function() {
-    var container = this.parent;
+    var container = this.contr;
+    this.loading(true);
     if(container != null) {
         for(var f in this.forms) {
             var form = this.forms[f];
@@ -493,7 +584,7 @@ Page.prototype.draw = function() {
                 if(this.privilege < item.privilege) {
                     continue;
                 }
-                item.setParent(tablePage);
+                item.setContainer(tablePage);
                 item.draw();
             }
 
@@ -518,10 +609,13 @@ Page.prototype.draw = function() {
             break;
         }
     }
+    setTimeout(function() {
+        this.loading(false);
+    }.bind(this), 500);
 };
 
 PageItem.prototype.draw = function() {
-    var tablePage = this.parent;
+    var tablePage = this.contr;
     if(tablePage != null && tablePage.tagName.toUpperCase() === "TABLE") {
         row = tablePage.insertRow(tablePage.rows.length);
         cell = row.insertCell(row.cells.length);
