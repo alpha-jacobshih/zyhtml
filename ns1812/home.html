@@ -10,7 +10,7 @@
 <body>
 <div id='containerBanner' class='containerBanner'></div>
 <div id='containerStatus' class='containerStatus'></div>
-<div id='containerMain' class='containerMain'></div>
+<div id='containerPanel' class='containerPanel'></div>
 
 <div id="divBlanket" style="display:none;"></div>
 <div id="divPopup" style="display:none;">
@@ -39,7 +39,7 @@
 | Lea                                                     @Logout | Language |
 += containerStatus ==========================================================|
 |                                                               @   @   @    |
-+= containerMain ============================================================+
++= containerPanel ===========================================================+
 |+= containerHomeMenu ======================================================+|
 ||                                                                          ||
 ||                    Configure   Control     Monitor                       ||
@@ -55,7 +55,7 @@
 | Lea                                                     @Logout | Language |
 += containerStatus ==========================================================|
 |                                                               @   @   @    |
-+= containerMain ============================================================+
++= containerPanel ===========================================================+
 |+= containerMenu ===++= containerPage =====================================+|
 || += tableMenu ===+ || += tablePage =====================================+ ||
 || | Configure     | || |                                                 | ||
@@ -91,7 +91,7 @@ $.createElement = function(parent, tag, args) {
         parent.appendChild(elm);
     }
     return elm;
-}
+};
 
 $.createTextNode = function(parent, data) {
     var text = document.createTextNode(data);
@@ -99,7 +99,7 @@ $.createTextNode = function(parent, data) {
         parent.appendChild(text);
     }
     return text;
-}
+};
 
 $.getAncestorByTagName = function(node, name) {
     var currNode = node;
@@ -113,7 +113,7 @@ $.getAncestorByTagName = function(node, name) {
         currNode = currNode.parentNode;
     } while(tagName != "HTML");
     return ancestorNode;
-}
+};
 
 // +++ fixed for ie9 and below.
 if (!Object.create) {
@@ -137,9 +137,11 @@ function URL(url) {
     this.url = url;
     this.queries = {};
 }
+
 URL.prototype.addQuery = function (name, value) {
     this.queries[name] = value;
-}
+};
+
 URL.prototype.toString = function() {
     var url = this.url;
     var qstring = "";
@@ -150,7 +152,7 @@ URL.prototype.toString = function() {
         }
     }
     return url + qstring;
-}
+};
 
 function Menu(title) {
     this.title = title;
@@ -158,7 +160,7 @@ function Menu(title) {
     this.addPage = function(page) { this.pages.push(page); };
 }
 
-function Page(title, description) {
+function PAGE(title, description) {
     this.contr = null;
     this.parent = null;
     this.profile = null;
@@ -195,11 +197,13 @@ function POPUP(width, height) {
     this.blanket = "divBlanket";
     this.init();
 }
+
 POPUP.prototype.viewport = function() {
     w = (typeof window.innerWidth != 'undefined') ? window.innerWidth : document.documentElement.clientWidth;
     h = (typeof window.innerHeight != 'undefined') ? window.innerHeight : document.documentElement.clientHeight;
     return { 'width': w, 'height': h };
 };
+
 POPUP.prototype.init = function() {
     var viewport = this.viewport();
     if ((viewport.height > document.body.parentNode.scrollHeight) && (viewport.height > document.body.parentNode.clientHeight)) {
@@ -230,6 +234,7 @@ POPUP.prototype.init = function() {
     el.style.top = top + 'px';
     el.style.left = left + 'px';
 };
+
 POPUP.prototype.show = function(isShow) {
     if(isShow) {
         $(this.blanket).style.display = 'block';
@@ -238,20 +243,22 @@ POPUP.prototype.show = function(isShow) {
         $(this.blanket).style.display = 'none';
         $(this.popup).style.display = 'none';
     }
-}
+};
 
-function BODY() {
+function MAIN() {
     this.contr = document.body;
     this.children = [];
     this.profile = null;
     this.privilege = null;
     this.language = "English";
-    this.popup = new POPUP(40, 40);
+    this.progressIcon = new POPUP(40, 40);
 }
-BODY.prototype.addChild = function(child) {
+
+MAIN.prototype.addChild = function(child) {
     this.children.push(child);
-}
-BODY.prototype.draw = function() {
+};
+
+MAIN.prototype.draw = function() {
     this.loading(true);
     for(var i in this.children) {
         this.children[i].draw();
@@ -259,11 +266,13 @@ BODY.prototype.draw = function() {
     setTimeout(function() {
         this.loading(false);
     }.bind(this), 500);
-}
-BODY.prototype.setPrivilege = function(privilege) {
+};
+
+MAIN.prototype.setPrivilege = function(privilege) {
     this.privilege = privilege;
-}
-BODY.prototype.setProfile = function(profile) {
+};
+
+MAIN.prototype.setProfile = function(profile) {
     this.profile = profile;
     if(profile === "User") {
         this.setPrivilege(P.User);
@@ -272,13 +281,15 @@ BODY.prototype.setProfile = function(profile) {
     } else if(profile === "Admin") {
         this.setPrivilege(P.Admin);
     }
-}
-BODY.prototype.setLanguage = function(language) {
+};
+
+MAIN.prototype.setLanguage = function(language) {
     console.log("selected language: "+language);
     this.language = language;
-}
-BODY.prototype.loading = function(isLoading) {
-    this.popup.show(isLoading);
+};
+
+MAIN.prototype.loading = function(isLoading) {
+    this.progressIcon.show(isLoading);
 };
 
 function CONTAINER(parent, name) {
@@ -286,17 +297,20 @@ function CONTAINER(parent, name) {
     this.contr = $(name);
     this.parent.addChild(this);
 }
+
 CONTAINER.prototype.removeAllNodes = function() {
     var contr = this.contr;
     while (contr.firstChild) {
         contr.removeChild(contr.firstChild);
     }
-}
+};
 
 function BANNER(parent, name) {
     CONTAINER.call(this, parent, name);
 }
+
 BANNER.prototype = Object.create(CONTAINER.prototype);
+
 BANNER.prototype.draw = function() {
     this.removeAllNodes();
     var img = text = href = null;
@@ -346,12 +360,14 @@ BANNER.prototype.draw = function() {
         this.parent.setLanguage(text);
         this.parent.draw();
     }.bind(this));
-}
+};
 
 function STATUSBAR(parent, name) {
     CONTAINER.call(this, parent, name);
 }
+
 STATUSBAR.prototype = Object.create(CONTAINER.prototype);
+
 STATUSBAR.prototype.draw = function() {
     this.removeAllNodes();
     var img = text = null;
@@ -367,19 +383,20 @@ STATUSBAR.prototype.draw = function() {
     img = $.createElement(contr, "img", {"src": "img/icon_wifi.png"});
     img = $.createElement(contr, "img", {"src": "img/icon_ok.png"});
     text = $.createTextNode(contr, " ");
+};
 
-}
-
-function MAIN(parent, name) {
+function PANEL(parent, name) {
     CONTAINER.call(this, parent, name);
     this.pageTitle = "";
 }
-MAIN.prototype = Object.create(CONTAINER.prototype);
 
-MAIN.prototype.setPageTitle = function(pageTitle) {
+PANEL.prototype = Object.create(CONTAINER.prototype);
+
+PANEL.prototype.setPageTitle = function(pageTitle) {
     this.pageTitle = pageTitle;
-}
-MAIN.prototype.draw = function() {
+};
+
+PANEL.prototype.draw = function() {
     this.removeAllNodes();
 
     if(this.pageTitle === null || this.pageTitle.length === 0) {
@@ -391,9 +408,9 @@ MAIN.prototype.draw = function() {
     } else {
         this.drawBody();
     }
-}
+};
 
-MAIN.prototype.drawLoginPage = function() {
+PANEL.prototype.drawLoginPage = function() {
     var items = {
         "username": new PageItem(P.User, "select", "Username", "User", {"options": ["User", "Admin"]}),
         "password": new PageItem(P.User, "text", "Password", "")
@@ -424,9 +441,9 @@ MAIN.prototype.drawLoginPage = function() {
         return false;
     }.bind(this));
     btnLogin.focus(true);
-}
+};
 
-MAIN.prototype.drawHomeMenu = function() {
+PANEL.prototype.drawHomeMenu = function() {
     var containerHomeMenu = $.createElement(this.contr, "div", {"class": "containerHomeMenu"});
     var divHomeMenuTopMargin = $.createElement(containerHomeMenu, "div", {"class": "divHomeMenuTopMargin"});
     var tableHomeMenu = $.createElement(containerHomeMenu, "table", {"class": "tableHomeMenu"});
@@ -462,14 +479,14 @@ MAIN.prototype.drawHomeMenu = function() {
             }
         }
     }
-}
+};
 
-MAIN.prototype.drawBody = function() {
+PANEL.prototype.drawBody = function() {
     this.drawMenu();
     this.drawPage();
-}
+};
 
-MAIN.prototype.drawMenu = function() {
+PANEL.prototype.drawMenu = function() {
     var containerMenu = $.createElement(this.contr, "div", {"class": "containerMenu"});
     var tableMenu = $.createElement(containerMenu, "table", {"class": "tableMenu"});
     for(var i in menu) {
@@ -499,9 +516,9 @@ MAIN.prototype.drawMenu = function() {
             }
         }
     }
-}
+};
 
-MAIN.prototype.drawPage = function() {
+PANEL.prototype.drawPage = function() {
     var page = this.getPage(this.pageTitle);
     if(page != null) {
         var containerPage = $.createElement(this.contr, "div", {"class": "containerPage"});
@@ -512,9 +529,9 @@ MAIN.prototype.drawPage = function() {
         page.setPrivilege(this.parent.privilege);
         page.draw();
     }
-}
+};
 
-MAIN.prototype.getPage = function(title) {
+PANEL.prototype.getPage = function(title) {
     for(var i in menu) {
         for(var j in menu[i].pages) {
             if(menu[i].pages[j].title === this.pageTitle) {
@@ -523,9 +540,9 @@ MAIN.prototype.getPage = function(title) {
         }
     }
     return null;
-}
+};
 
-MAIN.prototype.gotoPage = function (e) {
+PANEL.prototype.gotoPage = function (e) {
     var t = e.target;
     if(t instanceof HTMLElement && t.childNodes != null && t.childNodes.length > 0) {
         var title = t.childNodes[0].nodeValue;
@@ -542,9 +559,9 @@ MAIN.prototype.gotoPage = function (e) {
             location.href = url.toString();
         }
     }
-}
+};
 
-Page.prototype.init = function() {
+PAGE.prototype.init = function() {
     for(var f in this.forms) {
         for(var i in this.forms[f].items) {
             this.forms[f].items[i].setId(i);
@@ -552,14 +569,16 @@ Page.prototype.init = function() {
     }
 };
 
-Page.prototype.apply = function(action) {
+PAGE.prototype.apply = function(action) {
 };
-Page.prototype.loading = function(isLoading) {
-    var ns_main = this.parent;
-    var ns_body = ns_main.parent;
-    ns_body.loading(isLoading);
-}
-Page.prototype.draw = function() {
+
+PAGE.prototype.loading = function(isLoading) {
+    var ns_panel = this.parent;
+    var ns_main = ns_panel.parent;
+    ns_main.loading(isLoading);
+};
+
+PAGE.prototype.draw = function() {
     var container = this.contr;
     this.loading(true);
     if(container != null) {
@@ -671,29 +690,29 @@ function init() {
             var name = pair[0];
             var value = pair.length > 1 ? pair[1] : "";
             if(name === "page") {
-                main.setPageTitle(value);
+                panel.setPageTitle(value);
             }
             if(name === "profile") {
-                body.setProfile(value);
+                main.setProfile(value);
             }
         }
     }
-    body.draw();
+    main.draw();
 }
 
 function logout(){
-    body.setProfile(null);
+    main.setProfile(null);
     goHome();
 }
 
 function goHome() {
     if(domReflow) {
-        main.setPageTitle(null);
-        body.draw();
+        panel.setPageTitle(null);
+        main.draw();
     } else {
         var url = new URL(location.pathname);
-        if(body.profile != null && body.profile != "") {
-            url.addQuery("profile", body.profile);
+        if(main.profile != null && main.profile != "") {
+            url.addQuery("profile", main.profile);
         }
         location.href = url.toString();
     }
@@ -705,10 +724,10 @@ var P = {
     Expert: 0x02,
     Admin:  0x04
 };
-var body = new BODY();
-var banner = new BANNER(body, "containerBanner");
-var statusbar = new STATUSBAR(body, "containerStatus");
-var main = new MAIN(body, "containerMain");
+var main = new MAIN();
+var banner = new BANNER(main, "containerBanner");
+var statusbar = new STATUSBAR(main, "containerStatus");
+var panel = new PANEL(main, "containerPanel");
 var menu = {
     "configure": new Menu("Configure"),
     "control": new Menu("Control"),
@@ -716,25 +735,28 @@ var menu = {
 };
 
 menu.configure.pages = {
-    "device": new Page("Device"),
-    "plc": new Page("PLC"),
-    "wifi": new Page("WiFi")
+    "device": new PAGE("Device"),
+    "plc": new PAGE("PLC"),
+    "wifi": new PAGE("WiFi")
 };
+
 menu.control.pages = {
-    "map": new Page("Map"),
-    "schedule": new Page("Schedule"),
-    "manage": new Page("Manage")
+    "map": new PAGE("Map"),
+    "schedule": new PAGE("Schedule"),
+    "manage": new PAGE("Manage")
 };
+
 menu.monitor.pages = {
-    "info": new Page("Info"),
-    "usage": new Page("Usage"),
-    "tools": new Page("Tools")
+    "info": new PAGE("Info"),
+    "usage": new PAGE("Usage"),
+    "tools": new PAGE("Tools")
 };
 
 menu.configure.pages.device.forms = {
     "deviceAction": new Form("Device", "deviceAction"),
     "resetAction": new Form("Reset", "resetAction")
 };
+
 menu.configure.pages.device.forms.deviceAction.items = {
     "deviceName": new PageItem(P.User, "text", "Device name", "NS-1812"),
     "ledSignal": new PageItem(P.User, "select", "LED signal", "Enable", {"options": ["Enable", "Disable"]}),
@@ -761,6 +783,7 @@ menu.configure.pages.device.forms.resetAction.items = {
 menu.configure.pages.plc.forms = {
     "plcAction": new Form("PLC", "plcAction")
 };
+
 menu.configure.pages.plc.forms.plcAction.items = {
     "securityKey": new PageItem(P.User, "text", "Change security key", "HomePlugAV"),
     "maxNumOfNode": new PageItem(P.Expert, "text", "Max number of node", "3")
@@ -769,6 +792,7 @@ menu.configure.pages.plc.forms.plcAction.items = {
 menu.configure.pages.wifi.forms = {
     "wifiAction": new Form("WiFi", "wifiAction")
 };
+
 menu.configure.pages.wifi.forms.wifiAction.items = {
     "titlewifi24": new PageItem(P.User, "section", "Wireless network 2.4GHz"),
     "wifi24_ssid": new PageItem(P.User, "text", "SSID", "NS1812_2.4G"),
@@ -782,10 +806,10 @@ menu.configure.pages.wifi.forms.wifiAction.items = {
     "wifi50_channel": new PageItem(P.User, "select", "Channel", "161", {"options": ["149", "153", "157", "161"]})
 };
 
-
 menu.monitor.pages.info.forms = {
     "infoAction": new Form("Info", "")
 };
+
 menu.monitor.pages.info.forms.infoAction.items = {
     "serialNumber": new PageItem(P.User, "plaintext", "Serial number", "0123456789"),
     "macAddress": new PageItem(P.User, "plaintext", "MAC address", "00:11:22:33:aa:bb"),
@@ -795,6 +819,7 @@ menu.monitor.pages.info.forms.infoAction.items = {
     "ipAddress": new PageItem(P.User, "plaintext", "IP address", "2.10.86.189"),
     "uptime": new PageItem(P.User, "plaintext", "Uptime", "1453293715")
 };
+
 init();
 </script>
 </html>
