@@ -13,8 +13,7 @@
 <div id='containerPanel' class='containerPanel'></div>
 
 <div id="divBlanket" style="display:none;"></div>
-<div id="divPopup" style="display:none;">
-  <div id='divLoading'>
+<div id="divLoading" style="display:none;">
     <div id='divLoadingIcon'>
       <div class="sk-circle">
         <div class="sk-circle1  sk-child"></div>
@@ -31,7 +30,9 @@
         <div class="sk-circle12 sk-child"></div>
       </div>
     </div>
-  </div>
+</div>
+<div id="divQRCode" style="display:none;">
+<img src="img/qrcode.png">
 </div>
 
 <!--
@@ -190,11 +191,11 @@ function PageItem(privilege, type, title, value, args) {
     this.getId = function() { return this.id; };
 }
 
-function POPUP(width, height) {
+function POPUP(divPopup, divBlanket, width, height) {
     this.width = width;
     this.height = height;
-    this.popup = "divPopup";
-    this.blanket = "divBlanket";
+    this.popup = divPopup;
+    this.blanket = divBlanket;
     this.init();
 }
 
@@ -245,13 +246,21 @@ POPUP.prototype.show = function(isShow) {
     }
 };
 
+POPUP.prototype.addEventListener = function(name, handler) {
+    $(this.popup).addEventListener(name, handler);
+};
+
 function MAIN() {
     this.contr = document.body;
     this.children = [];
     this.profile = null;
     this.privilege = null;
     this.language = "English";
-    this.progressIcon = new POPUP(40, 40);
+    this.progressIcon = new POPUP("divLoading", "divBlanket", 40, 40);
+    this.qrcode = new POPUP("divQRCode", "divBlanket", 240, 240);
+    this.qrcode.addEventListener("click", function() {
+        this.qrcode.show(false);
+    }.bind(this));
 }
 
 MAIN.prototype.addChild = function(child) {
@@ -290,6 +299,10 @@ MAIN.prototype.setLanguage = function(language) {
 
 MAIN.prototype.loading = function(isLoading) {
     this.progressIcon.show(isLoading);
+};
+
+MAIN.prototype.displayWifiCredential = function(toDisplay) {
+    this.qrcode.show(toDisplay);
 };
 
 function CONTAINER(parent, name) {

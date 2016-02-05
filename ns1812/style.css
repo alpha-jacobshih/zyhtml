@@ -458,7 +458,15 @@ option {
   width:100%;
 }
 
-#divPopup {
+#divLoading {
+  position:absolute;
+  text-align: left;
+  width:100%;
+  height:100%;
+  z-index: 9002;
+}
+
+#divQRCode {
   position:absolute;
   text-align: left;
   width:100%;
@@ -468,12 +476,6 @@ option {
 /* --- popup div */
 
 /* +++ loading icon */
-#divLoading {
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
 #divLoadingIcon {
   position: relative;
   height: 100%;
