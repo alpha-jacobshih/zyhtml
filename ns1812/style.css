@@ -429,7 +429,7 @@ option {
 .divValue {
 }
 
-.divValue INPUT {
+.divValue INPUT text {
   background-color: #ececec;
   color: #000000;
 }

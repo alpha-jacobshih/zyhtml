@@ -688,6 +688,14 @@ PageItem.prototype.draw = function() {
             var spanInner = $.createElement(label, "span", {"class": "onoffswitch-inner"});
             var spanSwitch = $.createElement(label, "span", {"class": "onoffswitch-switch"});
             checkbox.checked = value;
+        } else if(this.type === "button") {
+            var btn = $.createElement(divElm, "input", {"type": "button", "class": "btnAction", "id": this.id, "value": this.value});
+            var handlers = this.args.handlers;
+            if(handlers) {
+                for(x in handlers) {
+                    btn.addEventListener(x, handlers[x]);
+                }
+            }
         } else if(this.type === "plaintext") {
             var value = this.value ? this.value : "";
             var plaintext = $.createTextNode(divElm, value);
@@ -812,6 +820,7 @@ menu.configure.pages.wifi.forms.wifiAction.items = {
     "wifi24_visible": new PageItem(P.Expert, "checkbox", "Enable SSID visible", true),
     "wifi24_sectype": new PageItem(P.User, "select", "Security type", "None", {"options": ["None", "WPA-PSK [TKIP]", "WPA2-PSK [AES]", "WPA-PSK [TKIP] + WPA2-PSK [AES]", "WPA/WPA2 Enterprise"]}),
     "wifi24_channel": new PageItem(P.User, "select", "Channel", "03", {"options": ["Auto", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]}),
+    "wifi24_credential": new PageItem(P.User, "button", "Display WiFi credential", "Display", {"handlers": {"click": function() { main.displayWifiCredential(true); } } }),
     "titlewifi50": new PageItem(P.User, "section", "Wireless network 5.0GHz"),
     "wifi50_ssid": new PageItem(P.User, "text", "SSID", "NS1812_5G"),
     "wifi50_visible": new PageItem(P.Expert, "checkbox", "Enable SSID visible", true),
