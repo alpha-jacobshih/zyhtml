@@ -161,7 +161,7 @@ function Menu(title) {
     this.addPage = function(page) { this.pages.push(page); };
 }
 
-function PAGE(title, description) {
+function Page(title, description) {
     this.contr = null;
     this.parent = null;
     this.profile = null;
@@ -191,7 +191,7 @@ function PageItem(privilege, type, title, value, args) {
     this.getId = function() { return this.id; };
 }
 
-function POPUP(divPopup, divBlanket, width, height) {
+function Popup(divPopup, divBlanket, width, height) {
     this.width = width;
     this.height = height;
     this.popup = divPopup;
@@ -199,13 +199,13 @@ function POPUP(divPopup, divBlanket, width, height) {
     this.init();
 }
 
-POPUP.prototype.viewport = function() {
+Popup.prototype.viewport = function() {
     w = (typeof window.innerWidth != 'undefined') ? window.innerWidth : document.documentElement.clientWidth;
     h = (typeof window.innerHeight != 'undefined') ? window.innerHeight : document.documentElement.clientHeight;
     return { 'width': w, 'height': h };
 };
 
-POPUP.prototype.init = function() {
+Popup.prototype.init = function() {
     var viewport = this.viewport();
     if ((viewport.height > document.body.parentNode.scrollHeight) && (viewport.height > document.body.parentNode.clientHeight)) {
         contentHeight = viewport.height;
@@ -236,7 +236,7 @@ POPUP.prototype.init = function() {
     el.style.left = left + 'px';
 };
 
-POPUP.prototype.show = function(isShow) {
+Popup.prototype.show = function(isShow) {
     if(isShow) {
         $(this.blanket).style.display = 'block';
         $(this.popup).style.display = 'block';
@@ -246,28 +246,28 @@ POPUP.prototype.show = function(isShow) {
     }
 };
 
-POPUP.prototype.addEventListener = function(name, handler) {
+Popup.prototype.addEventListener = function(name, handler) {
     $(this.popup).addEventListener(name, handler);
 };
 
-function MAIN() {
+function Main() {
     this.contr = document.body;
     this.children = [];
     this.profile = null;
     this.privilege = null;
     this.language = "English";
-    this.progressIcon = new POPUP("divLoading", "divBlanket", 40, 40);
-    this.qrcode = new POPUP("divQRCode", "divBlanket", 240, 240);
+    this.progressIcon = new Popup("divLoading", "divBlanket", 40, 40);
+    this.qrcode = new Popup("divQRCode", "divBlanket", 240, 240);
     this.qrcode.addEventListener("click", function() {
         this.qrcode.show(false);
     }.bind(this));
 }
 
-MAIN.prototype.addChild = function(child) {
+Main.prototype.addChild = function(child) {
     this.children.push(child);
 };
 
-MAIN.prototype.draw = function() {
+Main.prototype.draw = function() {
     this.loading(true);
     for(var i in this.children) {
         this.children[i].draw();
@@ -277,11 +277,11 @@ MAIN.prototype.draw = function() {
     }.bind(this), 500);
 };
 
-MAIN.prototype.setPrivilege = function(privilege) {
+Main.prototype.setPrivilege = function(privilege) {
     this.privilege = privilege;
 };
 
-MAIN.prototype.setProfile = function(profile) {
+Main.prototype.setProfile = function(profile) {
     this.profile = profile;
     if(profile === "User") {
         this.setPrivilege(P.User);
@@ -292,39 +292,39 @@ MAIN.prototype.setProfile = function(profile) {
     }
 };
 
-MAIN.prototype.setLanguage = function(language) {
+Main.prototype.setLanguage = function(language) {
     console.log("selected language: "+language);
     this.language = language;
 };
 
-MAIN.prototype.loading = function(isLoading) {
+Main.prototype.loading = function(isLoading) {
     this.progressIcon.show(isLoading);
 };
 
-MAIN.prototype.displayWifiCredential = function(toDisplay) {
+Main.prototype.displayWifiCredential = function(toDisplay) {
     this.qrcode.show(toDisplay);
 };
 
-function CONTAINER(parent, name) {
+function Container(parent, name) {
     this.parent = parent;
     this.contr = $(name);
     this.parent.addChild(this);
 }
 
-CONTAINER.prototype.removeAllNodes = function() {
+Container.prototype.removeAllNodes = function() {
     var contr = this.contr;
     while (contr.firstChild) {
         contr.removeChild(contr.firstChild);
     }
 };
 
-function BANNER(parent, name) {
-    CONTAINER.call(this, parent, name);
+function Banner(parent, name) {
+    Container.call(this, parent, name);
 }
 
-BANNER.prototype = Object.create(CONTAINER.prototype);
+Banner.prototype = Object.create(Container.prototype);
 
-BANNER.prototype.draw = function() {
+Banner.prototype.draw = function() {
     this.removeAllNodes();
     var img = text = href = null;
     var contr = this.contr;
@@ -375,13 +375,13 @@ BANNER.prototype.draw = function() {
     }.bind(this));
 };
 
-function STATUSBAR(parent, name) {
-    CONTAINER.call(this, parent, name);
+function StatusBar(parent, name) {
+    Container.call(this, parent, name);
 }
 
-STATUSBAR.prototype = Object.create(CONTAINER.prototype);
+StatusBar.prototype = Object.create(Container.prototype);
 
-STATUSBAR.prototype.draw = function() {
+StatusBar.prototype.draw = function() {
     this.removeAllNodes();
     var img = text = null;
     var divStatus = $.createElement(this.contr, "div", {"class": "divStatus"});
@@ -398,18 +398,18 @@ STATUSBAR.prototype.draw = function() {
     text = $.createTextNode(contr, " ");
 };
 
-function PANEL(parent, name) {
-    CONTAINER.call(this, parent, name);
+function Panel(parent, name) {
+    Container.call(this, parent, name);
     this.pageTitle = "";
 }
 
-PANEL.prototype = Object.create(CONTAINER.prototype);
+Panel.prototype = Object.create(Container.prototype);
 
-PANEL.prototype.setPageTitle = function(pageTitle) {
+Panel.prototype.setPageTitle = function(pageTitle) {
     this.pageTitle = pageTitle;
 };
 
-PANEL.prototype.draw = function() {
+Panel.prototype.draw = function() {
     this.removeAllNodes();
 
     if(this.pageTitle === null || this.pageTitle.length === 0) {
@@ -423,7 +423,7 @@ PANEL.prototype.draw = function() {
     }
 };
 
-PANEL.prototype.drawLoginPage = function() {
+Panel.prototype.drawLoginPage = function() {
     var items = {
         "username": new PageItem(P.User, "select", "Username", "User", {"options": ["User", "Admin"]}),
         "password": new PageItem(P.User, "text", "Password", "")
@@ -456,7 +456,7 @@ PANEL.prototype.drawLoginPage = function() {
     btnLogin.focus(true);
 };
 
-PANEL.prototype.drawHomeMenu = function() {
+Panel.prototype.drawHomeMenu = function() {
     var containerHomeMenu = $.createElement(this.contr, "div", {"class": "containerHomeMenu"});
     var divHomeMenuTopMargin = $.createElement(containerHomeMenu, "div", {"class": "divHomeMenuTopMargin"});
     var tableHomeMenu = $.createElement(containerHomeMenu, "table", {"class": "tableHomeMenu"});
@@ -494,12 +494,12 @@ PANEL.prototype.drawHomeMenu = function() {
     }
 };
 
-PANEL.prototype.drawBody = function() {
+Panel.prototype.drawBody = function() {
     this.drawMenu();
     this.drawPage();
 };
 
-PANEL.prototype.drawMenu = function() {
+Panel.prototype.drawMenu = function() {
     var containerMenu = $.createElement(this.contr, "div", {"class": "containerMenu"});
     var tableMenu = $.createElement(containerMenu, "table", {"class": "tableMenu"});
     for(var i in menu) {
@@ -531,7 +531,7 @@ PANEL.prototype.drawMenu = function() {
     }
 };
 
-PANEL.prototype.drawPage = function() {
+Panel.prototype.drawPage = function() {
     var page = this.getPage(this.pageTitle);
     if(page != null) {
         var containerPage = $.createElement(this.contr, "div", {"class": "containerPage"});
@@ -544,7 +544,7 @@ PANEL.prototype.drawPage = function() {
     }
 };
 
-PANEL.prototype.getPage = function(title) {
+Panel.prototype.getPage = function(title) {
     for(var i in menu) {
         for(var j in menu[i].pages) {
             if(menu[i].pages[j].title === this.pageTitle) {
@@ -555,7 +555,7 @@ PANEL.prototype.getPage = function(title) {
     return null;
 };
 
-PANEL.prototype.gotoPage = function (e) {
+Panel.prototype.gotoPage = function (e) {
     var t = e.target;
     if(t instanceof HTMLElement && t.childNodes != null && t.childNodes.length > 0) {
         var title = t.childNodes[0].nodeValue;
@@ -574,7 +574,7 @@ PANEL.prototype.gotoPage = function (e) {
     }
 };
 
-PAGE.prototype.init = function() {
+Page.prototype.init = function() {
     for(var f in this.forms) {
         for(var i in this.forms[f].items) {
             this.forms[f].items[i].setId(i);
@@ -582,16 +582,16 @@ PAGE.prototype.init = function() {
     }
 };
 
-PAGE.prototype.apply = function(action) {
+Page.prototype.apply = function(action) {
 };
 
-PAGE.prototype.loading = function(isLoading) {
+Page.prototype.loading = function(isLoading) {
     var ns_panel = this.parent;
     var ns_main = ns_panel.parent;
     ns_main.loading(isLoading);
 };
 
-PAGE.prototype.draw = function() {
+Page.prototype.draw = function() {
     var container = this.contr;
     this.loading(true);
     if(container != null) {
@@ -745,10 +745,10 @@ var P = {
     Expert: 0x02,
     Admin:  0x04
 };
-var main = new MAIN();
-var banner = new BANNER(main, "containerBanner");
-var statusbar = new STATUSBAR(main, "containerStatus");
-var panel = new PANEL(main, "containerPanel");
+var main = new Main();
+var banner = new Banner(main, "containerBanner");
+var statusbar = new StatusBar(main, "containerStatus");
+var panel = new Panel(main, "containerPanel");
 var menu = {
     "configure": new Menu("Configure"),
     "control": new Menu("Control"),
@@ -756,21 +756,21 @@ var menu = {
 };
 
 menu.configure.pages = {
-    "device": new PAGE("Device"),
-    "plc": new PAGE("PLC"),
-    "wifi": new PAGE("WiFi")
+    "device": new Page("Device"),
+    "plc": new Page("PLC"),
+    "wifi": new Page("WiFi")
 };
 
 menu.control.pages = {
-    "map": new PAGE("Map"),
-    "schedule": new PAGE("Schedule"),
-    "manage": new PAGE("Manage")
+    "map": new Page("Map"),
+    "schedule": new Page("Schedule"),
+    "manage": new Page("Manage")
 };
 
 menu.monitor.pages = {
-    "info": new PAGE("Info"),
-    "usage": new PAGE("Usage"),
-    "tools": new PAGE("Tools")
+    "info": new Page("Info"),
+    "usage": new Page("Usage"),
+    "tools": new Page("Tools")
 };
 
 menu.configure.pages.device.forms = {
