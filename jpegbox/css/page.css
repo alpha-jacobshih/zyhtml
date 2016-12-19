@@ -1,0 +1,190 @@
+/*
+ * styles.css
+ * 
+ * css decalarations and definitions for jpegbox.
+ * 
+ * @author jacob_shih
+ * 
+ */
+
+html, body {
+  width: 100%;
+}
+
+/* global settings */
+* {
+  font-family: verdana;
+}
+
+table, td {
+  border: 1px dotted grey;
+  border-spacing: 2px;
+  font-size: 14px;
+  position: relative;
+  text-align: left;
+}
+
+/* input file button */
+.filebutton {
+  position: relative;
+  display: inline-block;
+  background: #D0EEFF;
+  border: 1px solid #99D3F5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  overflow: hidden;
+  color: #1E88C7;
+  text-decoration: none;
+  text-indent: 0;
+  line-height: 20px;
+}
+.filebutton input {
+  position: absolute;
+  font-size: 20px;
+  right: 0;
+  top: 0;
+  opacity: 0;
+}
+.filebutton:hover {
+  background: #AADFFD;
+  border-color: #78C3F3;
+  color: #004974;
+  text-decoration: none;
+}
+
+#divOpenFile {
+}
+
+#divLoadImage, #divFileName {
+  position: relative;
+  display: inline-block;
+  padding: 4px 12px;
+  overflow: hidden;
+  color: #1E88C7;
+  line-height: 20px;
+}
+
+/* main */
+.containerMain {
+}
+
+.containerMain hr {
+  border: 1px dotted #00f;
+  height: 0px;
+  width: 90%;
+}
+
+/* panel */
+.containerPanel {
+  width: 100%;
+}
+
+/* result */
+.containerResult {
+  vertical-align: top;
+}
+
+/* divOpenFile */
+.divOpenFile {
+}
+
+/* divPreview, divFileInfo, divControl */
+.divPreview, .divFileInfo, .divControl {
+  display: inline-block;
+  position: relative;
+  vertical-align:top;
+  padding: 10px;
+}
+
+/* divPreview */
+.divPreview {
+  width: 400px;
+  border: 3px outset grey;
+}
+
+.divPreview canvas {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  border: 1px dotted red;
+}
+
+.divPreview canvas #canvasPreview {
+  z-index: 0;
+}
+
+.divPreview canvas #canvasFocusArea {
+  z-index: 1;
+}
+
+/* divFileInfo */
+.divFileInfo {
+}
+
+#tableFileInfo td {
+}
+
+#divFileInfoFileName {
+  border: 1px dashed lightgrey;
+  padding: 2px 0px 2px 0px;
+}
+
+/* divControl */
+.divControl {
+}
+
+#divControlFocusArea {
+}
+
+#tableFocusArea td {
+  padding: 2px;
+}
+
+/* divTargetArea */
+#divTargetArea {
+  position: relative;
+}
+
+/* divTargetAreaPopup */
+#divTargetAreaPopup {
+  position: absolute;
+  width: auto;
+  border:1px solid lightgrey;
+  background-color: lightcyan;
+  font-size: 10px;
+}
+
+/* canvasTargetArea */
+#canvasTargetArea {
+  border:2px solid red;
+}
+
+/* divBarChart */
+#divBarChart {
+}
+
+/* divCanvasBarChart */
+#divCanvasBarChart {
+}
+
+/* canvasBarChart */
+#divCanvasBarChart canvas {
+  margin: 10px;
+  border: 3px ridge lightgrey;
+}
+
+/* divTolerance */
+#divToleranceLabel, #divToleranceValue, #divToleranceSlider {
+  padding: 1px 5px 1px 5px;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* divDistribution */
+#divDistribution table, #divDistribution td {
+  border: 1px solid lightgrey;
+  border-spacing: 0px;
+  font-size: 10px;
+  text-align: left;
+}
+

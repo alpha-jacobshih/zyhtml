@@ -1,3 +1,7 @@
 # pycharm files
 .idea
 
+# komodo edit files
+*.komodoproject
+
+
